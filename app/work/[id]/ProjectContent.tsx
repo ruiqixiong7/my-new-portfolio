@@ -7,7 +7,7 @@ import { projectsData } from '../../../data/projects';
 
 export default function ProjectContent() {
   const params = useParams();
-  
+
   const currentId = typeof params?.id === 'string' ? params.id : '';
   const project = projectsData.find((p) => p.id === currentId);
 
@@ -28,29 +28,53 @@ export default function ProjectContent() {
   const isCosmic = project.id === 'the-cosmic-courier';
   const isFakeHuman = project.id === 'fake-human-manufacturing-factory';
   const isGossip = project.id === 'gossip-garden';
-  
+
+  // 🆕 是否是定制项目（有专属排版）
+  const isCustom = isFilmSoup || isCosmic || isFakeHuman || isGossip;
+
   // 自动化大底图与视频提取
   const bgImage = project.mainMedia.find(m => m.type === 'image')?.url || "/images/scene1.png";
   const introVideo = project.mainMedia.find(m => m.type === 'video');
 
+  // 🖼 通用图片渲染函数：自动读取 mainMedia 里所有 image
+  const renderImages = (gridClass = "grid grid-cols-1 md:grid-cols-2 gap-4") => (
+    <div className={gridClass}>
+      {project.mainMedia
+        .filter((m) => m.type === 'image')
+        .map((media, i) => (
+          <div
+            key={i}
+            className="rounded-lg overflow-hidden border border-zinc-900 cursor-zoom-in"
+            onClick={() => setSelectedImage(media.url)}
+          >
+            <img
+              src={media.url}
+              alt={`Image ${i + 1}`}
+              className="w-full h-auto object-cover hover:scale-105 transition duration-700"
+            />
+          </div>
+        ))}
+    </div>
+  );
+
   return (
     <div className={`min-h-screen bg-[#0d0f0e] text-zinc-100 font-sans selection:bg-zinc-800 relative ${selectedImage ? 'overflow-hidden' : ''}`}>
-      
+
       {/* 🏛 "IM Fell French Canon" 艺术字体（仅限 Film Soup） */}
       {isFilmSoup && (
         <link href="https://fonts.googleapis.com/css2?family=IM+Fell+French+Canon&display=swap" rel="stylesheet" />
       )}
 
       {/* 🖼 高清艺术背景定制 */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
-        style={{ 
+        style={{
           backgroundImage: `url(${bgImage})`,
-          opacity: isFilmSoup ? 0.15 : isGossip ? 0.04 : isFakeHuman ? 0.08 : 0.05, 
+          opacity: isFilmSoup ? 0.15 : isGossip ? 0.04 : isFakeHuman ? 0.08 : 0.05,
           filter: isGossip ? 'contrast(100%) brightness(60%) saturate(50%)' : 'none'
         }}
       />
-      
+
       {/* 胶片噪点层 */}
       {isFilmSoup && (
         <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03] bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=10')] mix-blend-overlay overflow-x-hidden" />
@@ -58,7 +82,7 @@ export default function ProjectContent() {
 
       {/* 🌟 全屏高清灯箱系统 */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-[#0d0f0e]/95 backdrop-blur-md z-[200] flex items-center justify-center p-4 md:p-12 cursor-zoom-out animate-fadeIn"
           onClick={() => setSelectedImage(null)}
         >
@@ -69,8 +93,8 @@ export default function ProjectContent() {
       {/* 网页主体流 */}
       <div className="relative z-10">
         <nav className="p-8 flex justify-between items-center max-w-5xl mx-auto">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className={`font-mono text-sm tracking-widest transition duration-300 ${
               isFilmSoup ? 'text-emerald-500 hover:text-[#00FF66]' : 'text-zinc-400 hover:text-white'
             }`}
@@ -81,13 +105,13 @@ export default function ProjectContent() {
         </nav>
 
         <main className="max-w-5xl mx-auto px-8 py-4 space-y-12">
-          
+
           {/* ================= 标题区域 ================= */}
           <div className="space-y-4">
-            <h1 
+            <h1
               className={`tracking-wide transition-colors ${
-                isFilmSoup 
-                  ? 'text-6xl md:text-8xl text-[#00FF66] uppercase font-bold' 
+                isFilmSoup
+                  ? 'text-6xl md:text-8xl text-[#00FF66] uppercase font-bold'
                   : isGossip
                     ? 'text-4xl md:text-6xl font-light text-zinc-100 uppercase tracking-wide'
                     : 'text-4xl md:text-5xl font-light text-zinc-50'
@@ -96,7 +120,7 @@ export default function ProjectContent() {
             >
               {project.title}
             </h1>
-            
+
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-mono text-zinc-400">
                 {project.category}
@@ -109,7 +133,7 @@ export default function ProjectContent() {
             </div>
           </div>
 
-          {/* 🎬 顶部大视频播放区（Gossip Garden 视频会在这里完美循环跑起来） */}
+          {/* 🎬 顶部大视频播放区 */}
           {introVideo && (
             <div className="w-full aspect-video bg-black rounded-lg overflow-hidden border border-zinc-900 shadow-2xl relative z-10">
               <video src={introVideo.url} controls autoPlay muted loop className="w-full h-full object-cover" />
@@ -118,7 +142,7 @@ export default function ProjectContent() {
 
           {/* 📋 主体栏目双栏排版 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-4">
-            
+
             {/* ⬅️ 左栏：About 核心描述与各个跳转按钮 */}
             <div className="lg:col-span-1 space-y-6">
               <div className="sticky top-8 space-y-6">
@@ -149,16 +173,44 @@ export default function ProjectContent() {
                   </div>
                 )}
 
-                {/* 🚀 新增跳转3：Gossip Garden 线上 Render 体验按钮 */}
+                {/* 🚀 跳转3：Gossip Garden 线上 Render 体验按钮 */}
                 {isGossip && (
                   <div className="pt-4">
-                    <a 
-                      href="https://gossip-garden-new-1.onrender.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <a
+                      href="https://gossip-garden-new-1.onrender.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center justify-center w-full text-center px-6 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-mono text-xs font-bold tracking-widest uppercase rounded shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                     >
                       LAUNCH PROJECT ↗
+                    </a>
+                  </div>
+                )}
+
+                {/* 🆕 通用 GitHub 按钮（非定制项目自动显示） */}
+                {!isCustom && project.githubUrl && (
+                  <div className="pt-2">
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-bold tracking-widest uppercase rounded transition-all duration-300 transform hover:-translate-y-0.5"
+                    >
+                      Connect to GitHub →
+                    </a>
+                  </div>
+                )}
+
+                {/* 🆕 通用 Render 按钮（非定制项目自动显示） */}
+                {!isCustom && project.externalUrl && (
+                  <div className="pt-2">
+                    <a
+                      href={project.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-full text-center px-6 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-mono text-xs font-bold tracking-widest uppercase rounded shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                    >
+                      {project.externalUrlText || 'LAUNCH PROJECT'} ↗
                     </a>
                   </div>
                 )}
@@ -167,12 +219,10 @@ export default function ProjectContent() {
 
             {/* ➡️ 右栏：多媒体作品详情流 */}
             <div className="lg:col-span-2 space-y-16">
-              
-              {/* ------------ 情况 A：【新增】GOSSIP GARDEN 八卦花园叙事艺术流 ------------ */}
+
+              {/* ------------ 情况 A：GOSSIP GARDEN ------------ */}
               {isGossip && (
                 <div className="space-y-12">
-                  
-                  {/* 1. 核心批判反思模块 */}
                   <section className="space-y-4 bg-zinc-900/20 p-6 rounded-lg border border-zinc-900/80 backdrop-blur-sm">
                     <h2 className="text-sm font-mono tracking-widest text-zinc-400 uppercase font-semibold">Critical Framing</h2>
                     <p className="text-zinc-400 text-sm leading-relaxed">
@@ -185,7 +235,6 @@ export default function ProjectContent() {
                     </div>
                   </section>
 
-                  {/* 2. 核心数学算法卡片 */}
                   <section className="space-y-3">
                     <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase">Algorithmic Index Calculation</h3>
                     <div className="p-5 bg-black rounded border border-zinc-900 font-mono text-xs text-zinc-300 space-y-2 overflow-x-auto shadow-inner">
@@ -197,7 +246,6 @@ export default function ProjectContent() {
                     </div>
                   </section>
 
-                  {/* 3. 数据→植物 映射可视化图表 */}
                   <section className="space-y-3">
                     <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase">Data-to-Botany Translation Matrix</h3>
                     <div className="border border-zinc-900 rounded-lg overflow-hidden text-sm">
@@ -220,7 +268,6 @@ export default function ProjectContent() {
                     </div>
                   </section>
 
-                  {/* 4. 迭代演进时间线历程 */}
                   <section className="space-y-4">
                     <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase">Iterative Evolution Phases</h3>
                     <div className="space-y-3 border-l border-zinc-900 pl-4 ml-2 font-mono text-xs">
@@ -247,43 +294,60 @@ export default function ProjectContent() {
                     </div>
                   </section>
 
+                  <section className="space-y-4">
+                    <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase">Visual Archive</h3>
+                    {renderImages()}
+                  </section>
                 </div>
               )}
 
-              {/* ------------ 情况 B：FILM SOUP 艺术流 ------------ */}
+              {/* ------------ 情况 B：FILM SOUP ------------ */}
               {isFilmSoup && (
                 <div className="space-y-14">
                   <section className="space-y-4 bg-zinc-900/20 p-6 rounded-lg border border-zinc-900/80 backdrop-blur-sm">
                     <h2 className="text-md font-mono tracking-widest text-[#00FF66] uppercase font-semibold">Inspiration & Concept</h2>
                     <p className="text-zinc-400 text-sm leading-relaxed">In my research, I examined a range of artistic practices that explore time and memory through image layering, geometric structures...</p>
                   </section>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {["1.jpg", "2.jpg", "3.jpg", "4.jpg"].map((n, i) => (
-                      <div key={n} className="aspect-[3/4] bg-zinc-900 rounded overflow-hidden border border-zinc-800 cursor-zoom-in" onClick={() => setSelectedImage(`/images/filmsoup-${n}`)}>
-                        <img src={`/images/filmsoup-${n}`} alt={`Film Soup ${i+1}`} className="w-full h-full object-cover hover:scale-110 transition duration-700"/>
-                      </div>
-                    ))}
-                  </div>
+                  {renderImages("grid grid-cols-2 md:grid-cols-4 gap-3")}
                 </div>
               )}
 
-              {/* ------------ 情况 C：FAKE HUMAN 制造工厂 ------------ */}
+              {/* ------------ 情况 C：FAKE HUMAN ------------ */}
               {isFakeHuman && (
                 <div className="space-y-12">
-                  <section className="space-y-4 bg-zinc-900/10 p-6 rounded-lg border border-zinc-900/60"><h2 className="text-sm font-mono tracking-widest text-red-400 uppercase font-bold">FACTORY DIRECTIVE</h2></section>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="aspect-video bg-zinc-900 rounded-lg overflow-hidden border border-zinc-900 cursor-zoom-in" onClick={() => setSelectedImage("/images/fake1.jpg")}><img src="/images/fake1.jpg" alt="Fake 1" className="w-full h-full object-cover" /></div>
-                  </div>
+                  <section className="space-y-4 bg-zinc-900/10 p-6 rounded-lg border border-zinc-900/60">
+                    <h2 className="text-sm font-mono tracking-widest text-red-400 uppercase font-bold">FACTORY DIRECTIVE</h2>
+                  </section>
+                  {renderImages()}
                 </div>
               )}
 
-              {/* ------------ 情况 D：THE COSMIC COURIER 游戏流 ------------ */}
+              {/* ------------ 情况 D：THE COSMIC COURIER ------------ */}
               {isCosmic && (
                 <div className="space-y-12">
-                  <section className="space-y-4"><h2 className="text-lg font-mono tracking-wider text-zinc-200 border-b border-zinc-900 pb-2 uppercase">WORLD SETTING</h2></section>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="rounded-lg overflow-hidden border border-zinc-900 cursor-zoom-in" onClick={() => setSelectedImage("/images/scene2.png")}><img src="/images/scene2.png" alt="Scene 2" className="w-full h-auto object-cover"/></div>
-                  </div>
+                  <section className="space-y-4">
+                    <h2 className="text-lg font-mono tracking-wider text-zinc-200 border-b border-zinc-900 pb-2 uppercase">WORLD SETTING</h2>
+                  </section>
+                  {renderImages()}
+                </div>
+              )}
+
+              {/* ------------ 情况 E：通用模板（其余所有项目） ------------ */}
+              {!isCustom && (
+                <div className="space-y-12">
+                  <section className="space-y-4">
+                    <h2 className="text-sm font-mono tracking-wider text-zinc-400 uppercase border-b border-zinc-900 pb-2">
+                      PROJECT MEDIA
+                    </h2>
+                  </section>
+
+                  {project.mainMedia.length > 0 ? (
+                    renderImages()
+                  ) : (
+                    <p className="text-zinc-500 font-mono text-sm italic">
+                      Media coming soon...
+                    </p>
+                  )}
                 </div>
               )}
 
