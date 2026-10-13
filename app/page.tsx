@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import localFont from 'next/font/local';
@@ -84,31 +84,24 @@ export default function HomePage() {
       cards.current.forEach((card, index) => {
         if (!card) return;
         const distance = index - position;
-        const depth = Math.min(Math.abs(distance), 1);
-        const fold = Math.sin(depth * Math.PI / 2);
-        const scale = reduced.matches ? 1 : 1.08 - fold * 0.46;
-        const tilt = reduced.matches ? 0 : -Math.sign(distance) * fold * 62;
-        const z = reduced.matches ? 0 : -fold * 120;
-        // Compress the outer pages into a book-like stack, while the center opens flat.
-        const track = Math.sign(distance) * (depth * 0.43 + Math.max(0, Math.abs(distance) - 1) * 0.075);
-        card.style.transform = `translate3d(-50%, -50%, 0) translateY(${track * height}px) perspective(${Math.max(800, height * 1.35)}px) translateZ(${z}px) rotateX(${tilt}deg) scale(${scale})`;
-        card.style.setProperty('--leaf', String(reduced.matches ? 0 : fold));
-        card.style.zIndex = String(20 - Math.round(Math.abs(distance) * 4));
-        card.style.visibility = Math.abs(distance) > 2.6 ? 'hidden' : 'visible';
+        const absDistance = Math.abs(distance);
+        const neighbor = Math.min(absDistance, 1);
+        const easedNeighbor = 1 - Math.pow(1 - neighbor, 3);
+        const track = Math.sign(distance) * (easedNeighbor * 0.565 + Math.max(0, absDistance - 1) * 0.115);
+        const scale = reduced.matches ? 1 : 1 - easedNeighbor * 0.055;
+        const brightness = reduced.matches ? 1 : 1 - easedNeighbor * 0.38;
+        const opacity = clamp(1 - Math.max(0, absDistance - 1.35) * 1.55, 0, 1);
+        card.style.transform = `translate3d(-50%, -50%, 0) translateY(${track * height}px) scale(${scale})`;
+        card.style.filter = `brightness(${brightness})`;
+        card.style.opacity = String(opacity);
+        card.style.zIndex = String(30 - Math.round(absDistance * 5));
+        card.style.visibility = absDistance > 2.15 ? 'hidden' : 'visible';
         card.style.pointerEvents = index === nearest ? 'auto' : 'none';
         card.tabIndex = index === nearest ? 0 : -1;
         card.setAttribute('aria-hidden', String(index !== nearest));
-        // Contain preserves the full centered original. On tall/narrow screens,
-        // clip off-center originals too, so letterboxing cannot reveal two full images.
         const artwork = card.querySelector('img');
-        if (artwork) {
-          const ratio = artwork.naturalWidth / artwork.naturalHeight || 1.8;
-          const contentHeight = Math.min(height * 0.68, width * (width <= 700 ? 0.86 : 0.72) / ratio);
-          const cut = clamp((Math.abs(distance) - 0.15) / 0.85, 0, 1) * 0.72;
-          const inset = cut === 0 ? 0 : (height * 0.68 - contentHeight) / 2 + contentHeight * cut;
-          artwork.style.clipPath = distance < 0 ? `inset(${inset}px 0 0)` : `inset(0 0 ${inset}px)`;
-        }
-      });
+        if (artwork) artwork.style.clipPath = 'none';
+});
     };
     const tick = (now: number) => {
       frame = 0;
@@ -119,10 +112,10 @@ export default function HomePage() {
         const diff = goal - window.scrollY;
         if (Math.abs(diff) < 1 || reduced.matches) { window.scrollTo(0, goal); snap = null; }
         // Browsers round scroll positions: a sub-pixel tail must not stall forever.
-        else window.scrollTo(0, window.scrollY + Math.sign(diff) * Math.min(Math.abs(diff), Math.max(1, Math.abs(diff) * (1 - Math.exp(-dt / 105)))));
+        else window.scrollTo(0, window.scrollY + Math.sign(diff) * Math.min(Math.abs(diff), Math.max(1, Math.abs(diff) * (1 - Math.exp(-dt / 150)))));
       }
       const target = clamp((window.scrollY - origin) / height, 0, scenes.length - 1);
-      position = reduced.matches ? target : position + (target - position) * (1 - Math.exp(-dt / 75));
+      position = reduced.matches ? target : position + (target - position) * (1 - Math.exp(-dt / 118));
       if (Math.abs(target - position) < 0.0001) position = target;
       draw();
       if (snap !== null || position !== target) frame = requestAnimationFrame(tick);
@@ -137,7 +130,7 @@ export default function HomePage() {
           snap = clamp(Math.round(raw), 0, scenes.length - 1);
           wake();
         }
-      }, 180);
+      }, 260);
     };
     const scroll = () => { wake(); if (snap === null) settle(); };
     const interrupt = () => { snap = null; window.clearTimeout(idle); };
@@ -222,5 +215,6 @@ export default function HomePage() {
     </main>
   );
 }
+
 
 

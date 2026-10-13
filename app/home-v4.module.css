@@ -1,4 +1,4 @@
-.home { position: relative; flex: 0 0 auto; width: 100%; background: #000; color: #fff; isolation: isolate; }
+﻿.home { position: relative; flex: 0 0 auto; width: 100%; background: #000; color: #fff; isolation: isolate; }
 .stage { position: sticky; top: 0; width: 100%; height: 100svh; overflow: hidden; background: #000; }
 .nav { position: absolute; inset: 0 0 auto; z-index: 50; padding: 25px 3vw; display: flex; justify-content: space-between; gap: 16px; font: 10px/1.5 Arial, sans-serif; letter-spacing: .09em; color: #aaa; }
 .nav nav { display: flex; gap: 26px; }
@@ -9,9 +9,6 @@
 .categories a { color: #d4d4d4; text-decoration: none; padding: 4px 0; border-bottom: 1px solid transparent; text-shadow: 0 1px 4px #000; }
 .categories a:hover { color: #fff; border-bottom-color: #fff; }
 .artwork { position: absolute; left: 50%; top: 50%; width: 72vw; height: 68svh; display: block; background: #000; will-change: transform; transform-style: preserve-3d; backface-visibility: hidden; }
-.artwork::before, .artwork::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: #0c0c0c; border: 1px solid #444; opacity: var(--leaf, 0); }
-.artwork::before { transform: translateZ(-8px) translateY(5px); box-shadow: 0 3px #191919, 0 5px #555, 0 8px #151515, 0 10px #393939; }
-.artwork::after { transform: translateZ(-17px) translateY(12px); box-shadow: 0 3px #343434, 0 5px #111, 0 7px #414141; }
 .artwork img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; transform: translateZ(1px); }
 .title { position: absolute; z-index: 40; left: 50%; top: 43%; transform: translate(-50%, -50%); margin: 0; padding: 0; width: max-content; max-width: 94%; font-family: var(--font-v4-inika), Georgia, 'Times New Roman', serif; font-weight: 400; font-size: min(10vw, 18svh); line-height: .96; letter-spacing: .008em; text-align: center; color: #fff; pointer-events: none; -webkit-text-stroke-color: #fff; }
 .title span { display: block; white-space: nowrap; }
@@ -44,3 +41,4 @@
 .glassPane { position: absolute; inset: 0; background: rgba(255,255,255,.14); backdrop-filter: blur(9px) saturate(1.55); -webkit-backdrop-filter: blur(9px) saturate(1.55); pointer-events: none; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .glyphs text { fill: rgba(255,255,255,.56); } }
 @media (forced-colors: active) { .glassPane { display: none; } .glyphs text { fill: CanvasText; stroke: none; } }
+
